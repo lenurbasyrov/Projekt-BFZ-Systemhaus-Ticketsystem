@@ -1,0 +1,34 @@
+@startuml
+left to right direction
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+title BFZ-Systemhaus Ticketmanager - Use-Case-Diagramm
+
+actor "Mitarbeiter / Benutzer" as User
+actor "Administrator" as Admin
+actor "Externe Kunden-API" as API
+
+rectangle "BFZ-Systemhaus Ticketmanager" {
+    usecase "Ticket anlegen" as UC_Create
+    usecase "Ticket bearbeiten" as UC_Edit
+    usecase "Ticket löschen" as UC_Delete
+    usecase "Tickets anzeigen" as UC_View
+    usecase "Kunden importieren" as UC_Import
+    usecase "Daten speichern" as UC_Save
+    usecase "Programm beenden" as UC_Exit
+}
+
+User --> UC_Create
+User --> UC_Edit
+User --> UC_Delete
+User --> UC_View
+User --> UC_Save
+User --> UC_Exit
+
+Admin --> UC_View
+Admin --> UC_Import
+Admin --> UC_Save
+
+API --> UC_Import
+@enduml

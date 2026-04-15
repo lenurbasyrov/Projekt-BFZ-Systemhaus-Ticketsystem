@@ -1,0 +1,132 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam linetype ortho
+skinparam packageStyle rectangle
+
+title BFZ-Systemhaus Ticketmanager - Vereinfachtes Klassendiagramm
+
+package "Modell" {
+    interface Identifiable {
+        +getId() : Long
+    }
+
+    class Benutzer {
+        -id : Long
+        -name : String
+        -email : String
+        +getId() : Long
+        +getName() : String
+        +getEmail() : String
+    }
+
+    class Kunde {
+        -adresse : String
+        +getAdresse() : String
+    }
+
+    class Admin {
+        -bereich : String
+        +getBereich() : String
+    }
+
+    class Ticket {
+        -id : Long
+        -titel : String
+        -beschreibung : String
+        -prioritaet : Prioritaet
+        -status : Status
+        +getId() : Long
+        +getTitel() : String
+        +getStatus() : Status
+        +setStatus(status) : void
+    }
+
+    enum Prioritaet {
+        NIEDRIG
+        MITTEL
+        HOCH
+    }
+
+    enum Status {
+        OFFEN
+        IN_ARBEIT
+        GESCHLOSSEN
+    }
+}
+
+package "Datenhaltung" {
+    class Repository<T> {
+        +add(item : T) : void
+        +remove(item : T) : void
+        +update(item : T) : void
+        +findById(id : Long) : T
+        +getAll() : List<T>
+    }
+
+    class StorageService {
+        +speichern(list : List<T>, dateiPfad : String) : void
+        +laden(dateiPfad : String) : List<T>
+    }
+
+    class ApiService {
+        +ladeKunden() : List<Kunde>
+    }
+}
+
+package "Benutzeroberfläche" {
+    class MainFrame {
+        +refreshTable() : void
+        +getSelectedTicket() : Ticket
+    }
+
+    class TicketTableModel {
+        +getTicketAt(rowIndex : int) : Ticket
+        +refresh() : void
+    }
+
+    class TicketFormDialog {
+        +showDialog() : Ticket
+    }
+}
+
+package "Steuerung" {
+    class TicketController {
+        +createTicket() : void
+        +editTicket() : void
+        +deleteTicket() : void
+        +importiereKunden() : void
+        +saveTickets() : void
+    }
+}
+
+Identifiable <|.. Benutzer
+Identifiable <|.. Ticket
+
+Benutzer <|-- Kunde
+Benutzer <|-- Admin
+
+Kunde "1" <-- "0..*" Ticket : autor
+Admin "0..1" <-- "0..*" Ticket : bearbeitet
+
+Ticket --> Prioritaet
+Ticket --> Status
+
+Repository ..> Identifiable
+Repository "1" --> "0..*" Ticket
+Repository "1" --> "0..*" Kunde
+
+StorageService ..> Ticket
+StorageService ..> Kunde
+ApiService ..> Kunde
+
+MainFrame --> TicketTableModel
+MainFrame --> TicketController
+TicketTableModel --> Ticket
+TicketController --> MainFrame
+TicketController --> Repository
+TicketController --> StorageService
+TicketController --> ApiService
+TicketController --> TicketFormDialog
+
+@enduml

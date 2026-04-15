@@ -1,0 +1,264 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam linetype ortho
+
+title BFZ-Systemhaus Ticketmanager - Klassendiagramm
+
+package model {
+    interface Identifiable {
+        +getId() : Long
+    }
+
+    class Benutzer {
+        -id : Long
+        -name : String
+        -email : String
+        -passwort : String
+        +Benutzer(id, name, email, passwort)
+        +getId() : Long
+        +getName() : String
+        +getEmail() : String
+        +anmelden() : void
+        +abmelden() : void
+    }
+
+    class Kunde {
+        -adresse : String
+        +Kunde(id, name, email, passwort, adresse)
+        +getAdresse() : String
+    }
+
+    class Admin {
+        -bereich : String
+        +Admin(id, name, email, passwort, bereich)
+        +getBereich() : String
+    }
+
+    class Ticket {
+        -id : Long
+        -titel : String
+        -beschreibung : String
+        -prioritaet : Prioritaet
+        -erstellungsDatum : LocalDateTime
+        -status : Status
+        -autor : Kunde
+        -verantwortlicherAdmin : Admin
+        +Ticket(id, titel, beschreibung, prioritaet, autor, verantwortlicherAdmin)
+        +getId() : Long
+        +getTitel() : String
+        +getBeschreibung() : String
+        +getPrioritaet() : Prioritaet
+        +getStatus() : Status
+        +getAutor() : Kunde
+        +getVerantwortlicherAdmin() : Admin
+        +setTitel(titel) : void
+        +setBeschreibung(beschreibung) : void
+        +setPrioritaet(prioritaet) : void
+        +setStatus(status) : void
+        +setVerantwortlicherAdmin(admin) : void
+        +ticketInfo() : void
+    }
+
+    enum Prioritaet {
+        NIEDRIG
+        MITTEL
+        HOCH
+    }
+
+    enum Status {
+        OFFEN
+        IN_ARBEIT
+        GESCHLOSSEN
+    }
+}
+
+package repository {
+    class Repository<T> {
+        -data : List<T>
+        +Repository()
+        +add(item : T) : void
+        +remove(item : T) : void
+        +update(newItem : T) : void
+        +findById(id : Long) : T
+        +getAll() : List<T>
+    }
+}
+
+package service {
+    class StorageService {
+        +speichern(list : List<T>, dateiPfad : String) : void
+        +laden(dateiPfad : String) : List<T>
+    }
+
+    class ApiService {
+        -httpClient : HttpClient
+        -gson : Gson
+        +ApiService()
+        +ladeKunden() : List<Kunde>
+        -parsenKunden(jsonString : String) : List<Kunde>
+        -jsonObjektToKunde(kundeJson : JsonObject) : Kunde
+    }
+}
+
+package exception {
+    class InvalidDataException {
+        +InvalidDataException(message : String)
+    }
+
+    class TicketNotFoundException {
+        +TicketNotFoundException(message : String)
+    }
+}
+
+package ui {
+    class MainFrame {
+        -ticketRepo : Repository<Ticket>
+        -kundeRepo : Repository<Kunde>
+        -ticketTableModel : TicketTableModel
+        -userTableModel : UserTableModel
+        -ticketTable : JTable
+        -userTable : JTable
+        -importMenuItem : JMenuItem
+        -speichernMenuItem : JMenuItem
+        -beendenMenuItem : JMenuItem
+        -neuButton : JButton
+        -bearbeitenButton : JButton
+        -loeschenButton : JButton
+        -userImportButton : JButton
+        -userDeleteButton : JButton
+        +MainFrame(ticketRepo : Repository<Ticket>, kundeRepo : Repository<Kunde>)
+        -initComponents() : void
+        -createTicketPanel() : JPanel
+        -createUserPanel() : JPanel
+        -initMenuBar() : void
+        +refreshTable() : void
+        +getSelectedTicket() : Ticket
+        +getSelectedKunde() : Kunde
+        +getImportMenuItem() : JMenuItem
+        +getSpeichernMenuItem() : JMenuItem
+        +getBeendenMenuItem() : JMenuItem
+        +getNeuButton() : JButton
+        +getBearbeitenButton() : JButton
+        +getLoeschenButton() : JButton
+        +getUserImportButton() : JButton
+        +getUserDeleteButton() : JButton
+    }
+
+    class TicketTableModel {
+        -ticketRepository : Repository<Ticket>
+        -tickets : List<Ticket>
+        -columnNames : String[]
+        +TicketTableModel(ticketRepository : Repository<Ticket>)
+        +getRowCount() : int
+        +getColumnCount() : int
+        +getColumnName(column : int) : String
+        +getValueAt(rowIndex : int, columnIndex : int) : Object
+        +getTicketAt(rowIndex : int) : Ticket
+        +refresh() : void
+    }
+
+    class TicketFormDialog {
+        -idField : JTextField
+        -titelField : JTextField
+        -beschreibungField : JTextField
+        -prioritaetBox : JComboBox
+        -statusBox : JComboBox
+        -kundeBox : JComboBox
+        +TicketFormDialog(owner : Frame, ticket : Ticket, verfuegbareKunden : List<Kunde>)
+        -initComponents(ticket : Ticket, verfuegbareKunden : List<Kunde>) : void
+        -onSave(origTicket : Ticket) : void
+        +showDialog() : Ticket
+    }
+
+    class UserTableModel {
+        -kundeRepo : Repository<Kunde>
+        -kunden : List<Kunde>
+        -columnNames : String[]
+        +UserTableModel(kundeRepo : Repository<Kunde>)
+        +getRowCount() : int
+        +getColumnCount() : int
+        +getColumnName(column : int) : String
+        +getValueAt(rowIndex : int, columnIndex : int) : Object
+        +getKundeAt(rowIndex : int) : Kunde
+        +refresh() : void
+    }
+}
+
+package controller {
+    class MainController {
+        -view : MainFrame
+        -ticketRepo : Repository<Ticket>
+        -kundeRepo : Repository<Kunde>
+        -storageService : StorageService
+        -apiService : ApiService
+        +MainController(view, ticketRepo, kundeRepo, storageService, apiService)
+        -initListeners() : void
+        -saveAllData() : void
+        -beenden() : void
+        -importiereKundenFromApi() : void
+        -deleteKunde() : void
+        -createTicket() : void
+        -editTicket() : void
+        -deleteTicket() : void
+    }
+}
+
+package app {
+    class Main {
+        -ticketRepo : Repository<Ticket>
+        -kundeRepo : Repository<Kunde>
+        -storageService : StorageService
+        -apiService : ApiService
+        +main(args : String[]) : void
+    }
+}
+
+Identifiable <|.. Benutzer
+Identifiable <|.. Ticket
+
+Benutzer <|-- Kunde
+Benutzer <|-- Admin
+
+Ticket "0..*" --> "1" Kunde : autor
+Ticket "0..*" --> "1" Admin : verantwortlicherAdmin
+Ticket --> Prioritaet
+Ticket --> Status
+
+Repository ..> Identifiable
+Repository "1" --> "0..*" Ticket : verwaltet
+Repository "1" --> "0..*" Kunde : verwaltet
+
+MainFrame --> TicketTableModel
+MainFrame --> UserTableModel
+MainFrame --> Repository
+
+TicketTableModel --> Repository
+TicketTableModel --> Ticket
+
+UserTableModel --> Repository
+UserTableModel --> Kunde
+
+TicketFormDialog --> Ticket
+TicketFormDialog --> Kunde
+
+MainController --> MainFrame
+MainController --> Repository
+MainController --> StorageService
+MainController --> ApiService
+MainController --> TicketFormDialog
+
+StorageService ..> Ticket
+StorageService ..> Kunde
+ApiService ..> Kunde
+
+Repository ..> TicketNotFoundException
+Ticket ..> InvalidDataException
+
+Main --> MainFrame
+Main --> MainController
+Main --> Repository
+Main --> StorageService
+Main --> ApiService
+
+@enduml
